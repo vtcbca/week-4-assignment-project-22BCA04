@@ -70,7 +70,40 @@ def validation_on_insert():
 	end;
 	""")
     print("validation insert trigger create successful")
+
+def log_trigger():
+    #create trigger of insert record
+    cur.execute("""create trigger if not exists insert_trigger
+                after insert 
+                on contact
+                begin
+                    insert into log_insert
+                    values(new.fname,new.contact,datetime('now','localtime'));
+                end;
+                )""")
+
+    #create trigger of update trigger
+    cur.execute("""create trigger if not exists update_trigger
+                after update
+                on contact
+                begin
+                    insert into log_update
+                    values(old.fname,old.lname,old.contact,old.email,old.city,'Update Before',datetime('now','localtime'));
+                    insert into log_update
+                    values(new.fname,new.lname,new.contact,new.email,new.city,'Update After',datetime('now','localtime'));
+                end;		
+                )""")
     
+    #create trigger of delete trigger
+    cur.execute("""create trigger if not exists delete_trigger
+                after delete
+                on contact
+                begin
+                    insert into log_delete
+                    values(old.fname,old.contact,datetime('now','localtime'));
+                end;)""")
+    print('Triggers are created successfully.')
+
 def insert_record():
     query="insert into contact values(?,?,?,?,?)"
     l=[]
@@ -159,6 +192,7 @@ cur=connection.cursor()
 create_contact_table()
 create_logtable()
 validation_on_insert()
+log_trigger()
 print()
 menu()
 print()
